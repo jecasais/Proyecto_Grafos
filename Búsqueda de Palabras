@@ -1,0 +1,117 @@
+import java.util.*;
+
+public class WordSearch {
+    private Board board;
+    private Dictionary dictionary;
+
+    public WordSearch(Board board, Dictionary dictionary) {
+        this.board = board;
+        this.dictionary = dictionary;
+    }
+
+    // Método para buscar todas las palabras usando DFS
+    public Set<String> searchWordsDFS() {
+        Set<String> foundWords = new HashSet<>();
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                dfs(board.getNode(i, j), "", new HashSet<>(), foundWords);
+            }
+        }
+        return foundWords;
+    }
+
+    private void dfs(Node node, String currentWord, Set<Node> visited, Set<String> foundWords) {
+        if (visited.contains(node)) return; // No usar el mismo nodo dos veces
+
+        visited.add(node);
+        currentWord += node.getLetter();
+
+        if (currentWord.length() >= 3 && dictionary.contains(currentWord)) {
+            foundWords.add(currentWord);
+        }
+
+        for (Node neighbor : node.getNeighbors()) {
+            dfs(neighbor, currentWord, new HashSet<>(visited), foundWords);
+        }
+    }
+
+    // Método para buscar palabras con BFS
+    public Set<String> searchWordsBFS() {
+        Set<String> foundWords = new HashSet<>();
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                bfs(board.getNode(i, j), foundWords);
+            }
+        }
+        return foundWords;
+    }
+
+    private void bfs(Node startNode, Set<String> foundWords) {
+        Queue<SearchState> queue = new LinkedList<>();
+        queue.add(new SearchState(startNode, "", new HashSet<>()));
+
+        while (!queue.isEmpty()) {
+            SearchState state = queue.poll();
+            Node node = state.node;
+            String currentWord = state.word;
+            Set<Node> visited = state.visited;
+
+            if (visited.contains(node)) continue;
+
+            visited.add(node);
+            currentWord += node.getLetter();
+
+            if (currentWord.length() >= 3 && dictionary.contains(currentWord)) {
+                foundWords.add(currentWord);
+            }
+
+            for (Node neighbor : node.getNeighbors()) {
+                queue.add(new SearchState(neighbor, currentWord, new HashSet<>(visited)));
+            }
+        }
+    }
+
+    // Método para buscar una palabra específica
+    public boolean searchSpecificWord(String word) {
+        word = word.toUpperCase();
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (searchDFSForWord(board.getNode(i, j), "", new HashSet<>(), word)) {
+                    dictionary.addWord(word);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean searchDFSForWord(Node node, String currentWord, Set<Node> visited, String targetWord) {
+        if (visited.contains(node)) return false;
+
+        visited.add(node);
+        currentWord += node.getLetter();
+
+        if (currentWord.equals(targetWord)) return true;
+
+        for (Node neighbor : node.getNeighbors()) {
+            if (searchDFSForWord(neighbor, currentWord, new HashSet<>(visited), targetWord)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Clase interna para el estado de búsqueda en BFS
+    private static class SearchState {
+        Node node;
+        String word;
+        Set<Node> visited;
+
+        SearchState(Node node, String word, Set<Node> visited) {
+            this.node = node;
+            this.word = word;
+            this.visited = visited;
+        }
+    }
+}
