@@ -1,0 +1,49 @@
+import javax.swing.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class FileManager {
+    private JFileChooser fileChooser;
+
+    public FileManager() {
+        fileChooser = new JFileChooser();
+    }
+
+    // Método para cargar archivo y leer su contenido
+    public List<String> loadFile() {
+        List<String> fileContent = new ArrayList<>();
+        int returnValue = fileChooser.showOpenDialog(null);
+
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    fileContent.add(line.trim());
+                }
+            } catch (IOException e) {
+                System.err.println("Error al leer el archivo: " + e.getMessage());
+            }
+        }
+        return fileContent;
+    }
+
+    // Método para guardar el diccionario actualizado en un archivo
+    public void saveFile(List<String> content) {
+        int returnValue = fileChooser.showSaveDialog(null);
+
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave))) {
+                for (String line : content) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+                System.out.println("Archivo guardado correctamente.");
+            } catch (IOException e) {
+                System.err.println("Error al guardar el archivo: " + e.getMessage());
+            }
+        }
+    }
+}
